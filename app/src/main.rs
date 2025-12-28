@@ -24,6 +24,11 @@ async fn main() {
 
     let routes = index.or(greeting);
 
-    println!("🚀 Server running at http://0.0.0.0:8080");
-    warp::serve(routes).run(([0, 0, 0, 0], 8080)).await;
+    println!("🚀 Server running at https://0.0.0.0:8443");
+    warp::serve(routes)
+        .tls()
+        .cert_path("/app/certs/cert.pem")
+        .key_path("/app/certs/key.pem")
+        .run(([0, 0, 0, 0], 8443))
+        .await;
 }

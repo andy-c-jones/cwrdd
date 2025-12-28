@@ -4,6 +4,38 @@ use anyhow::{bail, Context, Result};
 use std::time::Duration;
 use tokio::time::sleep;
 
+/// Ensure self-signed TLS certificates exist
+async fn ensure_certs(config: &Config) -> Result<()> {
+    let certs_dir = config.repo_path.join("config/certs");
+    let cert_path = certs_dir.join("cert.pem");
+    let key_path = certs_dir.join("key.pem");
+
+    if cert_path.exists() && key_path.exists() {
+        println!("✅ TLS certificates already exist\n");
+        return Ok(());
+    }
+
+    println!("🔐 Generating self-signed TLS certificates...");
+
+    // Create certs directory if it doesn't exist
+    std::fs::create_dir_all(&certs_dir)?;
+
+    let cert_task = Task::new("generate certs", "openssl")
+        .args([
+            "req", "-x509", "-newkey", "rsa:4096",
+            "-keyout", key_path.to_str().unwrap(),
+            "-out", cert_path.to_str().unwrap(),
+            "-days", "365",
+            "-nodes",
+            "-subj", "/CN=localhost/O=cwrdd-dev",
+            "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1",
+        ]);
+    cert_task.execute().await?;
+
+    println!("✅ TLS certificates generated\n");
+    Ok(())
+}
+
 /// Start the local development environment
 pub async fn up(config: &Config, recreate: bool) -> Result<()> {
     println!("🚀 Starting local development environment\n");
@@ -15,6 +47,9 @@ pub async fn up(config: &Config, recreate: bool) -> Result<()> {
              Run: cwrdd-make get-tools"
         );
     }
+
+    // Ensure TLS certificates exist
+    ensure_certs(config).await?;
 
     // Build the Rust application first
     println!("🏗️  Building cwrdd application...");
@@ -244,7 +279,7 @@ async fn check_needs_seed() -> Result<bool> {
 /// Print access information for running services
 fn print_access_info() {
     println!("🌐 Access your services:");
-    println!("   cwrdd App:     http://localhost:8080");
+    println!("   cwrdd App:     https://localhost:8443");
     println!("   PostgreSQL:    localhost:5432 (cwrdd_dev / cwrdd_user / cwrdd_password)");
     println!("   Redis:         localhost:6379");
     println!("   Grafana:       http://localhost:3000");

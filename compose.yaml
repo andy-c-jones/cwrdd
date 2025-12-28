@@ -9,7 +9,9 @@ services:
     image: cwrdd-app:local
     container_name: cwrdd-app
     ports:
-      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./config/certs:/app/certs:ro
     depends_on:
       postgres:
         condition: service_healthy

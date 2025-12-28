@@ -29,6 +29,9 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/cwrdd-app /app/cwrdd-app
 
-EXPOSE 8080
+# Certs will be mounted at runtime
+RUN mkdir -p /app/certs
+
+EXPOSE 8443
 
 CMD ["/app/cwrdd-app"]
