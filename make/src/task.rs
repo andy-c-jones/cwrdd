@@ -1,10 +1,36 @@
+//! Task execution primitives for cwrdd-make.
+//!
+//! This module provides the [`Task`] struct for defining and executing shell commands
+//! with streaming output, working directory support, and environment variables.
+
 use anyhow::{bail, Context, Result};
 use std::path::Path;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
-/// Represents a task that can be executed
+/// Represents a shell command that can be executed asynchronously.
+///
+/// Tasks support:
+/// - Custom arguments
+/// - Working directory
+/// - Environment variables
+/// - Streaming stdout/stderr output
+///
+/// # Example
+///
+/// ```no_run
+/// use cwrdd_make::task::Task;
+///
+/// # async fn example() -> anyhow::Result<()> {
+/// let task = Task::new("build app", "cargo")
+///     .args(["build", "--release"])
+///     .working_dir("/path/to/project");
+///
+/// task.execute().await?;
+/// # Ok(())
+/// # }
+/// ```
 pub struct Task {
     name: String,
     command: String,

@@ -1,8 +1,24 @@
+//! Configuration management for cwrdd-make.
+//!
+//! This module handles loading configuration from files or using defaults.
+//! The configuration specifies paths to the cwrdd repository components.
+
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
-/// Configuration for cwrdd-make
+/// Configuration for cwrdd-make.
+///
+/// Contains all paths and settings needed to locate and build the cwrdd project.
+///
+/// # Example
+///
+/// ```
+/// use cwrdd_make::config::Config;
+///
+/// let config = Config::load().expect("Failed to load config");
+/// println!("Repository at: {}", config.repo_path.display());
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     /// Path to the cwrdd repository root

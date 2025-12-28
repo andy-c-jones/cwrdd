@@ -53,6 +53,12 @@ enum Commands {
     TrustCert,
     /// Remove trust for the self-signed dev certificate
     UntrustCert,
+    /// Build and open rustdoc documentation
+    Doc {
+        /// Open documentation in browser after building
+        #[arg(long, short)]
+        open: bool,
+    },
 }
 
 #[tokio::main]
@@ -78,6 +84,7 @@ async fn main() -> Result<()> {
         Commands::GetTools => tasks::get_tools::run(&config).await?,
         Commands::TrustCert => tasks::certs::trust(&config).await?,
         Commands::UntrustCert => tasks::certs::untrust(&config).await?,
+        Commands::Doc { open } => tasks::doc::run(&config, open).await?,
     }
 
     Ok(())
