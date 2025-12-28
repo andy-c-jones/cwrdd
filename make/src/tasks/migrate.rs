@@ -230,6 +230,7 @@ pub async fn seed(config: &Config) -> Result<()> {
     // Parse connection details (simple parsing)
     let url = extract_property(&props_content, "url")?;
     let username = extract_property(&props_content, "username")?;
+    let password = extract_property(&props_content, "password")?;
 
     // Extract database name from JDBC URL
     let db_name = extract_db_name(&url)?;
@@ -249,6 +250,7 @@ pub async fn seed(config: &Config) -> Result<()> {
             "-f",
             seed_file.to_str().unwrap(),
         ])
+        .env("PGPASSWORD", &password)
         .working_dir(db_path.to_string_lossy().to_string())];
 
     run_tasks(tasks).await?;

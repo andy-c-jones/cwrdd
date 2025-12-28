@@ -5,7 +5,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 /// Start the local development environment
-pub async fn up(config: &Config) -> Result<()> {
+pub async fn up(config: &Config, recreate: bool) -> Result<()> {
     println!("🚀 Starting local development environment\n");
 
     // Check if podman-compose is installed
@@ -20,8 +20,13 @@ pub async fn up(config: &Config) -> Result<()> {
     let repo_path = &config.repo_path;
     
     println!("📦 Starting containers...");
+    let args = if recreate {
+        vec!["up", "-d", "--force-recreate"]
+    } else {
+        vec!["up", "-d", "--no-recreate"]
+    };
     let compose_up = Task::new("compose up", "podman-compose")
-        .args(["up", "-d"])
+        .args(args)
         .working_dir(repo_path.to_string_lossy().to_string());
     
     compose_up.execute().await?;

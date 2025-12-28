@@ -10,6 +10,7 @@ pub struct Task {
     command: String,
     args: Vec<String>,
     working_dir: Option<String>,
+    env_vars: Vec<(String, String)>,
 }
 
 impl Task {
@@ -20,6 +21,7 @@ impl Task {
             command: command.into(),
             args: Vec::new(),
             working_dir: None,
+            env_vars: Vec::new(),
         }
     }
 
@@ -35,6 +37,12 @@ impl Task {
         self
     }
 
+    /// Add an environment variable to the task
+    pub fn env(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.env_vars.push((key.into(), value.into()));
+        self
+    }
+
     /// Execute the task
     pub async fn execute(&self) -> Result<()> {
         println!("🔧 Running: {}", self.name);
@@ -46,6 +54,10 @@ impl Task {
         if let Some(ref dir) = self.working_dir {
             cmd.current_dir(dir);
             println!("   Working directory: {}", dir);
+        }
+
+        for (key, value) in &self.env_vars {
+            cmd.env(key, value);
         }
 
         // Capture stdout and stderr

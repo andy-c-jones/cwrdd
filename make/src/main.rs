@@ -20,7 +20,11 @@ enum Commands {
     /// Run tests
     Test,
     /// Start local development environment
-    Up,
+    Up {
+        /// Force recreate containers even if already running
+        #[arg(long)]
+        recreate: bool,
+    },
     /// Stop local development environment
     Down,
     /// Show logs from development environment
@@ -58,7 +62,7 @@ async fn main() -> Result<()> {
     match cli.command {
         Commands::Build => tasks::build::run(&config).await?,
         Commands::Test => tasks::test::run(&config).await?,
-        Commands::Up => tasks::compose::up(&config).await?,
+        Commands::Up { recreate } => tasks::compose::up(&config, recreate).await?,
         Commands::Down => tasks::compose::down(&config).await?,
         Commands::Logs { service, follow } => tasks::compose::logs(&config, service, follow).await?,
         Commands::MigrateDiff => tasks::migrate::diff(&config).await?,
