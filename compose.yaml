@@ -1,0 +1,171 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    container_name: cwrdd-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cwrdd_dev
+      POSTGRES_USER: cwrdd_user
+      POSTGRES_PASSWORD: cwrdd_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cwrdd_user -d cwrdd_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cwrdd-network
+
+  # Redis Cache
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: cwrdd-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cwrdd-network
+
+  # Grafana Tempo (Distributed Tracing) - Monolithic Mode
+  tempo:
+    image: docker.io/grafana/tempo:latest
+    container_name: cwrdd-tempo
+    command:
+      - "-config.file=/etc/tempo/tempo.yaml"
+    ports:
+      - "3200:3200"   # Tempo HTTP API
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+    volumes:
+      - ./config/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    networks:
+      - cwrdd-network
+
+  # Grafana Loki (Log Aggregation) - Monolithic Mode
+  loki:
+    image: docker.io/grafana/loki:latest
+    container_name: cwrdd-loki
+    command:
+      - "-config.file=/etc/loki/loki.yaml"
+    ports:
+      - "3100:3100"   # Loki HTTP API
+    volumes:
+      - ./config/loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki-data:/var/loki
+    networks:
+      - cwrdd-network
+
+  # Prometheus (Metrics) - Can use Mimir later if needed
+  prometheus:
+    image: docker.io/prom/prometheus:latest
+    container_name: cwrdd-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--web.enable-remote-write-receiver"
+    ports:
+      - "9090:9090"   # Prometheus UI
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - cwrdd-network
+
+  # Grafana Pyroscope (Continuous Profiling)
+  pyroscope:
+    image: docker.io/grafana/pyroscope:latest
+    container_name: cwrdd-pyroscope
+    ports:
+      - "4040:4040"   # Pyroscope HTTP API
+    volumes:
+      - pyroscope-data:/var/lib/pyroscope
+    networks:
+      - cwrdd-network
+
+  # Grafana Alloy (OpenTelemetry Collector & Agent)
+  alloy:
+    image: docker.io/grafana/alloy:latest
+    container_name: cwrdd-alloy
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"  # Alloy UI
+      - "4319:4317"    # OTLP gRPC (forwarded from app to Alloy)
+      - "4320:4318"    # OTLP HTTP (forwarded from app to Alloy)
+    volumes:
+      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+      - pyroscope
+    networks:
+      - cwrdd-network
+
+  # Grafana (Visualization & Dashboards)
+  grafana:
+    image: docker.io/grafana/grafana:latest
+    container_name: cwrdd-grafana
+    ports:
+      - "3000:3000"   # Grafana UI
+    environment:
+      # Anonymous access for local development
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      # Server settings
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      # Feature toggles
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor traceQLStreaming
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+      - pyroscope
+    networks:
+      - cwrdd-network
+
+volumes:
+  postgres-data:
+    name: cwrdd-postgres-data
+  redis-data:
+    name: cwrdd-redis-data
+  tempo-data:
+    name: cwrdd-tempo-data
+  loki-data:
+    name: cwrdd-loki-data
+  prometheus-data:
+    name: cwrdd-prometheus-data
+  pyroscope-data:
+    name: cwrdd-pyroscope-data
+  alloy-data:
+    name: cwrdd-alloy-data
+  grafana-data:
+    name: cwrdd-grafana-data
+
+networks:
+  cwrdd-network:
+    name: cwrdd-network
+    driver: bridge

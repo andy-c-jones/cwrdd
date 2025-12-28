@@ -56,20 +56,6 @@ impl Config {
     pub fn db_path(&self) -> PathBuf {
         self.repo_path.join("db")
     }
-
-    /// Save configuration to file next to binary
-    pub fn save(&self) -> Result<()> {
-        let config_path = Self::config_file_path()
-            .context("Could not determine config file path")?;
-
-        let content = toml::to_string_pretty(self)
-            .context("Failed to serialize config")?;
-
-        std::fs::write(&config_path, content)
-            .context(format!("Failed to write config file: {}", config_path.display()))?;
-
-        Ok(())
-    }
 }
 
 impl Default for Config {

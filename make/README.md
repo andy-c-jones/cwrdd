@@ -57,14 +57,21 @@ cwrdd-make seed
 ### Local Environment
 
 ```bash
-# Start local services (PostgreSQL, Redis, etc.)
-cwrdd-make up           # Coming soon
+# Start local services (PostgreSQL, Redis, Observability stack)
+cwrdd-make up
 
 # Stop local services
-cwrdd-make down         # Coming soon
+cwrdd-make down
 
-# Fresh start with clean database
-cwrdd-make refresh      # Coming soon
+# View logs (all services)
+cwrdd-make logs
+
+# View logs for specific service
+cwrdd-make logs postgres
+
+# Follow logs in real-time
+cwrdd-make logs --follow
+cwrdd-make logs -f postgres
 ```
 
 ## Available Commands
@@ -75,11 +82,15 @@ Run `cwrdd-make --help` to see all commands:
 Commands:
   build           Build the application
   test            Run tests
+  up              Start local development environment
+  down            Stop local development environment
+  logs            Show logs from development environment
   migrate-diff    Generate migration from schema diff
   migrate         Apply pending migrations
   migrate-status  Show migration status
   rollback        Rollback last migration
   seed            Seed database with development data
+  get-tools       Install development tools (Podman, Liquibase, etc.)
   install         Install cwrdd-make to user's PATH
   help            Print this message or the help of the given subcommand(s)
 ```
@@ -132,10 +143,21 @@ cargo test
 
 ## Prerequisites
 
-- **Rust** 1.70+ - Required for building
-- **PostgreSQL** 14+ - Required for database operations
-- **Liquibase** 4.20+ - Required for migrations
-- **cargo-nextest** (optional) - For faster test execution
+- **Rust** 1.70+ - Required for building cwrdd-make
+
+### Install All Development Tools
+
+```bash
+cd make
+cargo run --release -- get-tools
+```
+
+This will automatically install all required tools for your operating system:
+- **Podman** - Container runtime
+- **podman-compose** - Compose support for local environment
+- **PostgreSQL** client - For database operations
+- **Liquibase** 4.20+ - For migrations
+- **cargo-nextest** - For faster test execution
 
 ## Troubleshooting
 

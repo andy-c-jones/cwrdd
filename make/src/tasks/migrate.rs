@@ -2,10 +2,10 @@ use crate::config::Config;
 use crate::task::{command_exists, run_tasks, verify_directory, Task};
 use anyhow::{bail, Context, Result};
 use std::fs;
-use std::path::Path;
 
 const LIQUIBASE_VERSION: &str = "4.29.2";
-const LIQUIBASE_URL: &str = "https://github.com/liquibase/liquibase/releases/download/v4.29.2/liquibase-4.29.2.tar.gz";
+const LIQUIBASE_URL: &str =
+    "https://github.com/liquibase/liquibase/releases/download/v4.29.2/liquibase-4.29.2.tar.gz";
 
 /// Check if liquibase is installed
 fn check_liquibase() -> Result<bool> {
@@ -95,15 +95,13 @@ pub async fn diff(config: &Config) -> Result<()> {
 
     // For now, we'll create a task that runs liquibase diffChangeLog
     // This will compare the actual database with the schema files
-    let tasks = vec![
-        Task::new("liquibase diffChangeLog", "liquibase")
-            .args([
-                "diffChangeLog",
-                "--changeLogFile",
-                &format!("migrations/{}", changeset_file),
-            ])
-            .working_dir(db_path.to_string_lossy().to_string()),
-    ];
+    let tasks = vec![Task::new("liquibase diffChangeLog", "liquibase")
+        .args([
+            "diffChangeLog",
+            "--changeLogFile",
+            &format!("migrations/{}", changeset_file),
+        ])
+        .working_dir(db_path.to_string_lossy().to_string())];
 
     match run_tasks(tasks).await {
         Ok(_) => {
@@ -226,13 +224,13 @@ pub async fn seed(config: &Config) -> Result<()> {
 
     // Read database connection from liquibase.properties
     let props_file = db_path.join("liquibase.properties");
-    let props_content = fs::read_to_string(&props_file)
-        .context("Failed to read liquibase.properties")?;
+    let props_content =
+        fs::read_to_string(&props_file).context("Failed to read liquibase.properties")?;
 
     // Parse connection details (simple parsing)
     let url = extract_property(&props_content, "url")?;
     let username = extract_property(&props_content, "username")?;
-    
+
     // Extract database name from JDBC URL
     let db_name = extract_db_name(&url)?;
 
@@ -307,12 +305,16 @@ mod tests {
     #[test]
     fn test_extract_property() {
         let content = "url: jdbc:postgresql://localhost:5432/cwrdd_dev\nusername: cwrdd_user\npassword: cwrdd_password";
-        
+
         let url = extract_property(content, "url");
         assert!(url.is_ok(), "Failed to extract url: {:?}", url);
         let url_value = url.unwrap();
-        assert!(url_value.contains("cwrdd_dev"), "URL '{}' doesn't contain 'cwrdd_dev'", url_value);
-        
+        assert!(
+            url_value.contains("cwrdd_dev"),
+            "URL '{}' doesn't contain 'cwrdd_dev'",
+            url_value
+        );
+
         let username = extract_property(content, "username");
         assert!(username.is_ok());
         assert_eq!(username.unwrap(), "cwrdd_user");

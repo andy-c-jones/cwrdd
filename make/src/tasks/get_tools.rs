@@ -16,6 +16,7 @@ pub async fn run(_config: &Config) -> Result<()> {
         _ => {
             bail!("Unsupported OS: {}. Please install tools manually:\n\
                    - Podman: https://podman.io/getting-started/installation\n\
+                   - podman-compose: https://github.com/containers/podman-compose\n\
                    - Liquibase: https://www.liquibase.org/download\n\
                    - PostgreSQL client: psql command\n\
                    - cargo-nextest: cargo install cargo-nextest --locked", os);
@@ -54,17 +55,18 @@ async fn install_ubuntu() -> Result<()> {
 
     // Check what needs to be installed
     let needs_podman = !command_exists("podman");
+    let needs_podman_compose = !command_exists("podman-compose");
     let needs_liquibase = !command_exists("liquibase");
     let needs_psql = !command_exists("psql");
     let needs_nextest = !command_exists("cargo-nextest");
 
-    if !needs_podman && !needs_liquibase && !needs_psql && !needs_nextest {
+    if !needs_podman && !needs_podman_compose && !needs_liquibase && !needs_psql && !needs_nextest {
         println!("✅ All tools already installed!");
         return Ok(());
     }
 
     // Update apt if we need to install anything
-    if needs_podman || needs_liquibase || needs_psql {
+    if needs_podman || needs_podman_compose || needs_liquibase || needs_psql {
         println!("📦 Updating package lists...");
         tasks.push(
             Task::new("apt update", "sudo")
@@ -81,6 +83,17 @@ async fn install_ubuntu() -> Result<()> {
         );
     } else {
         println!("✓ Podman already installed");
+    }
+
+    // Install podman-compose
+    if needs_podman_compose {
+        println!("🐳 Installing podman-compose...");
+        tasks.push(
+            Task::new("install podman-compose", "sudo")
+                .args(["apt", "install", "-y", "podman-compose"])
+        );
+    } else {
+        println!("✓ podman-compose already installed");
     }
 
     // Install PostgreSQL client
@@ -195,11 +208,12 @@ async fn install_macos() -> Result<()> {
 
     // Check what needs to be installed
     let needs_podman = !command_exists("podman");
+    let needs_podman_compose = !command_exists("podman-compose");
     let needs_liquibase = !command_exists("liquibase");
     let needs_psql = !command_exists("psql");
     let needs_nextest = !command_exists("cargo-nextest");
 
-    if !needs_podman && !needs_liquibase && !needs_psql && !needs_nextest {
+    if !needs_podman && !needs_podman_compose && !needs_liquibase && !needs_psql && !needs_nextest {
         println!("✅ All tools already installed!");
         return Ok(());
     }
@@ -210,6 +224,13 @@ async fn install_macos() -> Result<()> {
         tasks.push(Task::new("brew install podman", "brew").args(["install", "podman"]));
     } else {
         println!("✓ Podman already installed");
+    }
+
+    if needs_podman_compose {
+        println!("🐳 Installing podman-compose...");
+        tasks.push(Task::new("brew install podman-compose", "brew").args(["install", "podman-compose"]));
+    } else {
+        println!("✓ podman-compose already installed");
     }
 
     if needs_liquibase {
@@ -258,6 +279,13 @@ fn print_versions() {
         if let Ok(output) = std::process::Command::new("podman").arg("--version").output() {
             let version = String::from_utf8_lossy(&output.stdout);
             println!("  Podman: {}", version.trim());
+        }
+    }
+    
+    if command_exists("podman-compose") {
+        if let Ok(output) = std::process::Command::new("podman-compose").arg("--version").output() {
+            let version = String::from_utf8_lossy(&output.stdout);
+            println!("  podman-compose: {}", version.trim());
         }
     }
     

@@ -19,6 +19,18 @@ enum Commands {
     Build,
     /// Run tests
     Test,
+    /// Start local development environment
+    Up,
+    /// Stop local development environment
+    Down,
+    /// Show logs from development environment
+    Logs {
+        /// Specific service to show logs for
+        service: Option<String>,
+        /// Follow log output
+        #[arg(short, long)]
+        follow: bool,
+    },
     /// Generate migration from schema diff
     MigrateDiff,
     /// Apply pending migrations
@@ -46,6 +58,9 @@ async fn main() -> Result<()> {
     match cli.command {
         Commands::Build => tasks::build::run(&config).await?,
         Commands::Test => tasks::test::run(&config).await?,
+        Commands::Up => tasks::compose::up(&config).await?,
+        Commands::Down => tasks::compose::down(&config).await?,
+        Commands::Logs { service, follow } => tasks::compose::logs(&config, service, follow).await?,
         Commands::MigrateDiff => tasks::migrate::diff(&config).await?,
         Commands::Migrate => tasks::migrate::apply(&config).await?,
         Commands::MigrateStatus => tasks::migrate::status(&config).await?,
