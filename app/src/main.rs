@@ -1,3 +1,29 @@
-fn main() {
-    println!("Hello, world!");
+use askama::Template;
+use warp::Filter;
+
+#[derive(Template)]
+#[template(path = "index.html")]
+struct IndexTemplate {
+    title: String,
+    message: String,
+}
+
+#[tokio::main]
+async fn main() {
+    let index = warp::path::end().map(|| {
+        let template = IndexTemplate {
+            title: "cwrdd".to_string(),
+            message: "Hello from cwrdd!".to_string(),
+        };
+        warp::reply::html(template.render().unwrap())
+    });
+
+    let greeting = warp::path!("api" / "greeting").map(|| {
+        warp::reply::html("<p>👋 Hello from the server! This was fetched with htmx.</p>")
+    });
+
+    let routes = index.or(greeting);
+
+    println!("🚀 Server running at http://0.0.0.0:8080");
+    warp::serve(routes).run(([0, 0, 0, 0], 8080)).await;
 }

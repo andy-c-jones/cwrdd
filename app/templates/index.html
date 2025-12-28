@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 { color: #00d9ff; }
+        button {
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        button:hover { background: #00b8d9; }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #16213e;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ message }}</h1>
+    <p>This is a simple warp + askama + htmx example.</p>
+    
+    <button hx-get="/api/greeting" hx-target="#result" hx-swap="innerHTML">
+        Get Greeting
+        <span class="htmx-indicator">...</span>
+    </button>
+    
+    <div id="result">Click the button to fetch a greeting via htmx!</div>
+</body>
+</html>

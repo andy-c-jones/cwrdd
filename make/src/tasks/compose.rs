@@ -16,6 +16,18 @@ pub async fn up(config: &Config, recreate: bool) -> Result<()> {
         );
     }
 
+    // Build the Rust application first
+    println!("🏗️  Building cwrdd application...");
+    crate::tasks::build::run(config).await?;
+
+    // Build the Docker image
+    println!("\n🐳 Building Docker image...");
+    let app_path = config.app_path();
+    let docker_build = Task::new("docker build", "podman")
+        .args(["build", "-t", "cwrdd-app:local", "."])
+        .working_dir(app_path.to_string_lossy().to_string());
+    docker_build.execute().await?;
+
     // Navigate to repo root and start compose
     let repo_path = &config.repo_path;
     
@@ -232,6 +244,7 @@ async fn check_needs_seed() -> Result<bool> {
 /// Print access information for running services
 fn print_access_info() {
     println!("🌐 Access your services:");
+    println!("   cwrdd App:     http://localhost:8080");
     println!("   PostgreSQL:    localhost:5432 (cwrdd_dev / cwrdd_user / cwrdd_password)");
     println!("   Redis:         localhost:6379");
     println!("   Grafana:       http://localhost:3000");
