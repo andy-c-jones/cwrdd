@@ -8,15 +8,31 @@ cwrdd is built on the fundamental belief that human connection and democratic pa
 
 ### Core Principles
 
+#### Privacy and Security
+
 - **People deserve a safe and secure place to share ideas and arrange in-person meetings.** Privacy and security are not optional features—they are fundamental rights that enable free expression and democratic participation.
+
+- **People should be allowed complete privacy in private channels but should not be able to hide behind anonymity in public channels and groups.** Privacy and accountability serve different purposes: private conversations deserve absolute privacy, while public discourse benefits from accountability.
+
+- **It should be exceptionally clear to users what is being done 'publicly' vs 'privately'.** Users must always understand the context of their communications and the implications of their actions.
+
+- **cwrdd will never provide a mechanism to decrypt private user data.** We will not launch in jurisdictions that have laws requiring backdoors or access to encrypted communications. This is a non-negotiable technical and ethical stance.
+
+#### Human Connection
 
 - **Human interaction is more important than ever in an era dominated by technology.** While technology connects us digitally, it should facilitate and enhance real-world human connection, not replace it.
 
 - **Real in-person interactions are critical for democracy.** Democratic participation requires the ability to organize, meet, and discuss ideas face-to-face. Technology should empower these interactions, not hinder them.
 
-- **People should be allowed complete privacy in private channels but should not be able to hide behind anonymity in public channels and groups.** Privacy and accountability serve different purposes: private conversations deserve absolute privacy, while public discourse benefits from accountability.
+#### Trust and Safety
 
-- **It should be exceptionally clear to users what is being done 'publicly' vs 'privately'.** Users must always understand the context of their communications and the implications of their actions.
+- **Users must be at least 16 years old to create an account.** We protect young people by enforcing age requirements and will comply with jurisdiction-specific age regulations.
+
+- **Users deserve protection from spam and harmful content.** We employ machine learning, automated filtering, and user reporting to detect and prevent spam while respecting privacy in encrypted communications.
+
+- **Illegal content will not be tolerated.** We use automated scanning, hash-matching (PhotoDNA), and machine learning to detect and remove illegal content from public channels. For private encrypted messages, we rely on user reports and blind pattern detection to identify bad actors without accessing message content.
+
+- **Bad actors will be restricted and removed.** We implement graduated enforcement: accounts flagged for spam or harmful content face restrictions on messaging non-contacts, and repeated violations result in permanent bans.
 
 ## Architectural Philosophy
 
