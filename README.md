@@ -102,7 +102,130 @@ All design documentation is maintained in this repository to serve as living doc
 
 ## Getting Started
 
-*Coming soon: Setup instructions and development guide*
+### Prerequisites
+
+- **Rust** 1.70+ - [Install from rustup.rs](https://rustup.rs/)
+- **PostgreSQL** 14+ - For database
+- **Liquibase** 4.20+ - For database migrations ([Installation instructions](https://www.liquibase.org/download))
+
+### Initial Setup
+
+**1. Clone the repository:**
+```bash
+git clone https://github.com/andy-c-jones/cwrdd.git
+cd cwrdd
+```
+
+**2. Bootstrap cwrdd-make (build tool):**
+```bash
+cd make
+cargo build --release
+cargo run --release -- install
+```
+
+This builds and installs `cwrdd-make` to your PATH (~/.local/bin by default).
+
+**3. Add to PATH if needed:**
+
+If the installer indicates `~/.local/bin` is not in your PATH, add it:
+
+```bash
+# For bash (add to ~/.bashrc)
+export PATH="$HOME/.local/bin:$PATH"
+
+# For zsh (add to ~/.zshrc)
+export PATH="$HOME/.local/bin:$PATH"
+
+# For fish
+fish_add_path ~/.local/bin
+
+# Reload your shell
+source ~/.bashrc  # or ~/.zshrc
+```
+
+**4. Verify installation:**
+```bash
+cwrdd-make --help
+```
+
+You should see the cwrdd-make help output with all available commands.
+
+### Development Workflow
+
+Once cwrdd-make is installed:
+
+```bash
+# Start local development environment (PostgreSQL, Redis, etc)
+cwrdd-make up
+
+# Generate and apply database migrations
+cwrdd-make migrate-diff  # Generate migration from schema
+cwrdd-make migrate       # Apply migrations
+
+# Seed development data
+cwrdd-make seed
+
+# Build the application
+cwrdd-make build
+
+# Run tests
+cwrdd-make test
+
+# Stop local environment
+cwrdd-make down
+```
+
+### First Time Setup
+
+After installing cwrdd-make, run these commands to set up your development environment:
+
+```bash
+# 1. Start local services (PostgreSQL, Redis, etc.)
+cwrdd-make up
+
+# 2. Apply database migrations
+cwrdd-make migrate
+
+# 3. Seed development data
+cwrdd-make seed
+
+# 4. Build the application
+cwrdd-make build
+
+# 5. Run tests to verify everything works
+cwrdd-make test
+```
+
+### Available Commands
+
+Run `cwrdd-make --help` to see all available commands:
+
+- `build` - Build the application
+- `test` - Run tests
+- `migrate-diff` - Generate migration from schema diff
+- `migrate` - Apply pending migrations
+- `migrate-status` - Show migration status
+- `rollback` - Rollback last migration
+- `seed` - Seed database with development data
+- `up` - Start local development environment (coming soon)
+- `down` - Stop local environment (coming soon)
+- `refresh` - Fresh start with clean database (coming soon)
+
+### Troubleshooting
+
+**cwrdd-make not found after installation:**
+- Verify ~/.local/bin is in your PATH: `echo $PATH | grep .local/bin`
+- Re-run the install: `cd make && cargo run --release -- install`
+- Reload your shell: `source ~/.bashrc` or open a new terminal
+
+**Liquibase not found:**
+- Install Liquibase: See [installation guide](https://www.liquibase.org/download)
+- Verify installation: `liquibase --version`
+
+**PostgreSQL connection errors:**
+- Ensure PostgreSQL is running
+- Check connection settings in `db/liquibase.properties`
+- Verify database exists: `psql -l`
 
 ## License
 
