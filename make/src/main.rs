@@ -49,6 +49,10 @@ enum Commands {
     Install,
     /// Install development tools (Podman, Liquibase, etc.)
     GetTools,
+    /// Trust the self-signed dev certificate locally
+    TrustCert,
+    /// Remove trust for the self-signed dev certificate
+    UntrustCert,
 }
 
 #[tokio::main]
@@ -72,6 +76,8 @@ async fn main() -> Result<()> {
         Commands::Seed => tasks::migrate::seed(&config).await?,
         Commands::Install => tasks::install::run(&config).await?,
         Commands::GetTools => tasks::get_tools::run(&config).await?,
+        Commands::TrustCert => tasks::certs::trust(&config).await?,
+        Commands::UntrustCert => tasks::certs::untrust(&config).await?,
     }
 
     Ok(())
