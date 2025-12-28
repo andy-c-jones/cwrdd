@@ -102,11 +102,100 @@ All design documentation is maintained in this repository to serve as living doc
 
 ## Getting Started
 
+### Quick Start (Ubuntu)
+
+For Ubuntu-based distributions, use our automated setup script:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/andy-c-jones/cwrdd.git
+cd cwrdd
+
+# 2. Run the setup script (installs Rust and build tools)
+./scripts/setup-ubuntu.sh
+
+# 3. Reload your shell
+source ~/.bashrc  # or open a new terminal
+
+# 4. Build and install cwrdd-make
+cd make
+cargo build --release
+cargo run --release -- install
+
+# 5. Install additional development tools
+cwrdd-make get-tools  # Installs Podman, Liquibase, PostgreSQL client, cargo-nextest
+
+# 6. Set up development environment
+cwrdd-make up        # Start containers (PostgreSQL, Redis, etc.) - coming soon
+cwrdd-make migrate   # Apply database migrations
+cwrdd-make seed      # Load test data
+cwrdd-make build     # Build application
+cwrdd-make test      # Run tests
+
+# You're ready to develop! 🎉
+```
+
+### What Gets Installed
+
+**setup-ubuntu.sh script:**
+- build-essential (gcc, make, etc.)
+- git, curl, wget
+- rustup (from apt)
+- Rust stable toolchain
+
+**cwrdd-make get-tools:**
+- Podman (container runtime)
+- Liquibase (database migrations)
+- PostgreSQL client (psql command)
+- cargo-nextest (fast test runner)
+
+### Manual Setup (Other Distributions)
+
+If you're not on Ubuntu:
+
+**1. Install Rust and build tools:**
+```bash
+# Arch Linux
+sudo pacman -S rustup base-devel git
+rustup default stable
+
+# Fedora
+sudo dnf install rustup
+sudo dnf groupinstall "Development Tools"
+rustup default stable
+
+# macOS
+brew install rustup-init
+rustup-init
+xcode-select --install
+```
+
+**2. Build and install cwrdd-make:**
+```bash
+cd make
+cargo build --release
+cargo run --release -- install
+```
+
+**3. Install other tools:**
+```bash
+cwrdd-make get-tools  # Auto-installs for Ubuntu/Debian/macOS
+```
+
+If `get-tools` doesn't support your OS, install manually:
+- **Podman**: https://podman.io/getting-started/installation
+- **Liquibase**: https://www.liquibase.org/download (requires Java)
+- **PostgreSQL client**: Your distro's postgresql-client package
+- **cargo-nextest**: `cargo install cargo-nextest --locked`
+
 ### Prerequisites
 
-- **Rust** 1.70+ - [Install from rustup.rs](https://rustup.rs/)
-- **PostgreSQL** 14+ - For database
-- **Liquibase** 4.20+ - For database migrations ([Installation instructions](https://www.liquibase.org/download))
+- **Operating System**: Linux or macOS (Windows via WSL2)
+- **Rust** 1.70+ via rustup
+- **Build tools** (gcc, make, git)
+- **Podman** 4.0+ (container runtime - installed via `cwrdd-make get-tools`)
+- **Liquibase** 4.20+ (migrations - installed via `cwrdd-make get-tools`)
+- **PostgreSQL client** (installed via `cwrdd-make get-tools`)
 
 ### Initial Setup
 
@@ -128,6 +217,27 @@ This builds and installs `cwrdd-make` to your PATH (~/.local/bin by default).
 **3. Add to PATH if needed:**
 
 If the installer indicates `~/.local/bin` is not in your PATH, add it:
+
+```bash
+# For bash (add to ~/.bashrc)
+export PATH="$HOME/.local/bin:$PATH"
+
+# For zsh (add to ~/.zshrc)
+export PATH="$HOME/.local/bin:$PATH"
+
+# For fish
+fish_add_path ~/.local/bin
+
+# Reload your shell
+source ~/.bashrc  # or ~/.zshrc
+```
+
+**4. Verify installation:**
+```bash
+cwrdd-make --help
+```
+
+You should see the cwrdd-make help output with all available commands.
 
 ```bash
 # For bash (add to ~/.bashrc)

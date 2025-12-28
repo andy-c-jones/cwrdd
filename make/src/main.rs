@@ -31,6 +31,8 @@ enum Commands {
     Seed,
     /// Install cwrdd-make to user's PATH
     Install,
+    /// Install development tools (Podman, Liquibase, etc.)
+    GetTools,
 }
 
 #[tokio::main]
@@ -50,6 +52,7 @@ async fn main() -> Result<()> {
         Commands::Rollback => tasks::migrate::rollback(&config).await?,
         Commands::Seed => tasks::migrate::seed(&config).await?,
         Commands::Install => tasks::install::run(&config).await?,
+        Commands::GetTools => tasks::get_tools::run(&config).await?,
     }
 
     Ok(())
